@@ -13,12 +13,13 @@ public abstract class QueryRepositories : IQueryRepositories
     private readonly DbContext _dbContext;
     private readonly IMapper _mapper;
     private readonly Dictionary<Type, object> _repositories;
-
-    public QueryRepositories(DbContext orgContext, IMapper mapper)
+    protected readonly Type _assembly;
+    public QueryRepositories(DbContext orgContext, IMapper mapper,Type type)
     {
         _dbContext = orgContext;
         _mapper = mapper;
         _repositories = new Dictionary<Type, object>();
+        _assembly = type;
     }
 
     public virtual IReadRepository<TEntity, TPrimary> Repository<TEntity, TPrimary>()
@@ -37,7 +38,7 @@ public abstract class QueryRepositories : IQueryRepositories
         if (_repositories.Keys.Contains(typeof(TRepository)))
             return (TRepository)_repositories[typeof(TRepository)];
 
-        var type = typeof(TRepository).Assembly.GetTypes()
+        var type = _assembly.Assembly.GetTypes()
             .FirstOrDefault(x => !x.IsAbstract
                                  && !x.IsInterface
                                  && x.BaseType == typeof(ReadRepository<,>)
