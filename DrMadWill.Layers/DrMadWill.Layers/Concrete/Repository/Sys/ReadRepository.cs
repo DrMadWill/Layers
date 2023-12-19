@@ -195,23 +195,13 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
         };
     }
 
-    private async Task<SourcePaged<TEntity>> GetSourcePagedAsync(IQueryable<TEntity> source, PageReq req)
+    public virtual async Task<SourcePaged<TEntity>> GetSourcePagedAsync(IQueryable<TEntity> source, PageReq req)
     {
-        if (source == null) throw new ArgumentNullException(nameof(source));
-        req.Page = req.Page == 0 ? 1 : req.Page;
-
-        // PerPage Count
-        if (req.PerPage > 0 && req.PerPage <= 200)
-            Paginate<TEntity>.PerPage = req.PerPage;
-
-        return new SourcePaged<TEntity>
-        {
-            PagingModel = new PageModel(await source.CountAsync(), req.Page, Paginate<TEntity>.PerPage),
-            Source = await Paginate<TEntity>.Paging(source, req.Page).ToListAsync(),
-        };
+        return await SourcePaged<TEntity>.PagedAsync(source, req);
     }
+    
 
-    private async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(IQueryable<TEntity> source, PageReq req)
+    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(IQueryable<TEntity> source, PageReq req)
         where TDto : class, IBaseDto<TPrimary>
     {
         if (source == null) throw new ArgumentNullException(nameof(source));

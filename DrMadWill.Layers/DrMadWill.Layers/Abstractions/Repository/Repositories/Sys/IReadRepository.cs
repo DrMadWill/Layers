@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using DrMadWill.Layers.Abstractions.Repository.Core;
 using DrMadWill.Layers.Extensions.Paging;
+using Microsoft.EntityFrameworkCore;
 
 namespace DrMadWill.Layers.Abstractions.Repository.Repositories.Sys;
 
@@ -84,7 +85,8 @@ public interface IReadRepository<TEntity, TPrimary> : IRepository<TEntity, TPrim
     Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(string languageCode, PageReq req, Func<List<TEntity>, List<TEntity>>? func = null)
         where TDto : class, IBaseDto<TPrimary>;
 
-    Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate);
+    Task<SourcePaged<TEntity>> GetSourcePagedAsync(IQueryable<TEntity> source, PageReq req);
+        Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate);
 
     Task<bool> AllAsync(Expression<Func<TEntity, bool>> predicate);
 
