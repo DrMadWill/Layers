@@ -24,15 +24,14 @@ public abstract class ServiceManager : IServiceManager
     {
         if (_services.Keys.Contains(typeof(TService)))
             return (TService)_services[typeof(TService)];
-
-        var serviceName = typeof(TService).Name.Substring(1); 
-        var type = Assembly.GetExecutingAssembly().GetTypes()
+        
+        var type = typeof(TService).Assembly.GetTypes()
             .FirstOrDefault(x => !x.IsAbstract
                                  && !x.IsInterface
-                                 && x.Name == serviceName);
+                                 && x.Name == typeof(TService).Name.Substring(1));;
 
         if (type == null)
-            throw new KeyNotFoundException($"Service type is not found. Service Name {serviceName}");
+            throw new KeyNotFoundException($"Service type is not found. Service Name { typeof(TService).Name.Substring(1)}");
 
         var service = (TService)Activator.CreateInstance(type, _unitOfWork,_queryRepositories,_mapper)!;
 

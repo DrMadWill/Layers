@@ -37,14 +37,14 @@ public abstract class QueryRepositories : IQueryRepositories
         if (_repositories.Keys.Contains(typeof(TRepository)))
             return (TRepository)_repositories[typeof(TRepository)];
 
-        var type = Assembly.GetExecutingAssembly().GetTypes()
+        var type = typeof(TRepository).Assembly.GetTypes()
             .FirstOrDefault(x => !x.IsAbstract
                                  && !x.IsInterface
                                  && x.BaseType == typeof(ReadRepository<,>)
                                  && x.Name == typeof(TRepository).Name.Substring(1));
 
         if (type == null)
-            throw new KeyNotFoundException("Repository type is not found");
+            throw new KeyNotFoundException($"Repository type is not found.{ typeof(TRepository).Name.Substring(1)}");
 
         var repository = (TRepository)Activator.CreateInstance(type, _dbContext, _mapper)!;
 
