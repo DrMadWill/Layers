@@ -11,15 +11,15 @@ namespace DrMadWill.Layers.Concrete.Repository.Sys;
 public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrimary>
     where TEntity : class, IBaseEntity<TPrimary>, new()
 {
-    private readonly DbContext _dbContext;
-    private readonly IMapper _mapper;
+    protected readonly DbContext _dbContext;
+    protected readonly IMapper _mapper;
     public DbSet<TEntity> Table { get; private set; }
 
-    public ReadRepository(DbContext orgContext, IMapper mapper)
+    public ReadRepository(DbContext dbContext, IMapper mapper)
     {
-        _dbContext = orgContext;
+        _dbContext = dbContext;
         _mapper = mapper;
-        Table = orgContext.Set<TEntity>();
+        Table = dbContext.Set<TEntity>();
     }
 
     public void Dispose()

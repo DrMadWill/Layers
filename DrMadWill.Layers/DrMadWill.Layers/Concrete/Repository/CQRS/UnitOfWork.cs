@@ -37,7 +37,6 @@ public abstract class UnitOfWork : IUnitOfWork
         var type = _assembly.Assembly.GetTypes()
             .FirstOrDefault(x => !x.IsAbstract
                                  && !x.IsInterface
-                                 && x.BaseType == typeof(WriteRepository<,>)
                                  && x.Name == typeof(TRepository).Name.Substring(1));
 
         if (type == null)

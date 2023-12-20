@@ -41,7 +41,6 @@ public abstract class QueryRepositories : IQueryRepositories
         var type = _assembly.Assembly.GetTypes()
             .FirstOrDefault(x => !x.IsAbstract
                                  && !x.IsInterface
-                                 && x.BaseType == typeof(ReadRepository<,>)
                                  && x.Name == typeof(TRepository).Name.Substring(1));
 
         if (type == null)
