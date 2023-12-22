@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using AutoMapper;
-using DrMadWill.Layers.Abstractions.Repository.Core;
 using DrMadWill.Layers.Abstractions.Repository.Repositories.Sys;
+using DrMadWill.Layers.Core;
 using DrMadWill.Layers.Extensions;
 using DrMadWill.Layers.Extensions.Paging;
 using Microsoft.EntityFrameworkCore;
@@ -132,6 +132,19 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
         return query.Where(predicate);
     }
 
+    public virtual Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate)
+        => GetAllQueryable().AnyAsync(predicate);
+
+    public virtual Task<bool> AllAsync(Expression<Func<TEntity, bool>> predicate)
+        => GetAllQueryable().AllAsync(predicate);
+
+    public virtual Task<int> CountAsync()
+        => GetAllQueryable().CountAsync();
+
+    public virtual Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate)
+        => GetAllQueryable().CountAsync(predicate);
+    
+    
     public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(PageReq req, Func<List<TEntity>, List<TEntity>>? func = null) where TDto : class, IBaseDto<TPrimary>
     {
         var source = GetAllQueryable();
@@ -328,15 +341,5 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
         };
     }
 
-    public virtual Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate)
-        => GetAllQueryable().AnyAsync(predicate);
-
-    public virtual Task<bool> AllAsync(Expression<Func<TEntity, bool>> predicate)
-        => GetAllQueryable().AllAsync(predicate);
-
-    public virtual Task<int> CountAsync()
-        => GetAllQueryable().CountAsync();
-
-    public virtual Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate)
-        => GetAllQueryable().CountAsync(predicate);
+    
 }

@@ -1,5 +1,5 @@
 using System.Linq.Expressions;
-using DrMadWill.Layers.Abstractions.Repository.Core;
+using DrMadWill.Layers.Core;
 
 namespace DrMadWill.Layers.Abstractions.Repository.Repositories.Sys;
 

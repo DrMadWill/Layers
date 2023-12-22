@@ -1,4 +1,4 @@
-namespace DrMadWill.Layers.Abstractions.Repository.Core;
+namespace DrMadWill.Layers.Core;
 
 public interface IBaseDto<Type>
 {

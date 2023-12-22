@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using DrMadWill.Layers.Abstractions.Repository.Core;
+using DrMadWill.Layers.Core;
 
 namespace DrMadWill.Layers.Extensions;
 

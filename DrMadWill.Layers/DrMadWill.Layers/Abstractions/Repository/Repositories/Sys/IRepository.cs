@@ -1,4 +1,4 @@
-using DrMadWill.Layers.Abstractions.Repository.Core;
+using DrMadWill.Layers.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace DrMadWill.Layers.Abstractions.Repository.Repositories.Sys;
