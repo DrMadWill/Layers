@@ -12,13 +12,10 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/DrMadWill/Layers.git</RepositoryUrl>
     <Version>1.0.1</Version>
+    <Title>DrMadWill.Layers</Title>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\..\Downloads\Dr..png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
     <None Include="..\..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
