@@ -9,13 +9,13 @@ public class WriteRepository<TEntity, TPrimary> : IWriteRepository<TEntity, TPri
     where TEntity : class, IBaseEntity<TPrimary>, new()
 
 {
-    private readonly DbContext _dbContext;
+    protected readonly DbContext _dbContext;
     public DbSet<TEntity> Table { get; private set; }
 
-    public WriteRepository(DbContext orgContext)
+    public WriteRepository(DbContext dbContext)
     {
-        _dbContext = orgContext;
-        Table = orgContext.Set<TEntity>();
+        _dbContext = dbContext;
+        Table = dbContext.Set<TEntity>();
     }
 
     public virtual TEntity Update(TEntity entity)

@@ -11,8 +11,8 @@ public abstract class UnitOfWork : IUnitOfWork
 {
     private readonly DbContext _dbContext;
     private readonly Dictionary<Type, object> _repositories;
-
-    public UnitOfWork(DbContext orgContext)
+    protected readonly Type _assembly;
+    public UnitOfWork(DbContext orgContext,Type type)
     {
         _dbContext = orgContext;
         _repositories = new Dictionary<Type, object>();
@@ -34,14 +34,13 @@ public abstract class UnitOfWork : IUnitOfWork
         if (_repositories.Keys.Contains(typeof(TRepository)))
             return (TRepository)_repositories[typeof(TRepository)];
 
-        var type = Assembly.GetExecutingAssembly().GetTypes()
+        var type = _assembly.Assembly.GetTypes()
             .FirstOrDefault(x => !x.IsAbstract
                                  && !x.IsInterface
-                                 && x.BaseType == typeof(WriteRepository<,>)
                                  && x.Name == typeof(TRepository).Name.Substring(1));
 
         if (type == null)
-            throw new KeyNotFoundException("Repository type is not found");
+            throw new KeyNotFoundException($"Repository type is not found.{ typeof(TRepository).Name.Substring(1)}");
 
         var repository = (TRepository)Activator.CreateInstance(type, _dbContext)!;
 
