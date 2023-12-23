@@ -11,7 +11,7 @@
     <PackageProjectUrl>https://github.com/DrMadWill/Layers.git</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/DrMadWill/Layers.git</RepositoryUrl>
-    <Version>1.5.0</Version>
+    <Version>1.7.1</Version>
   </PropertyGroup>
   <ItemGroup>
     
@@ -30,6 +30,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.23" />
 		<PackageReference Include="AutoMapper" Version="12.0.1" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 
 </Project>
