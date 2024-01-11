@@ -1,9 +1,8 @@
 using System.Linq.Expressions;
 using DrMadWill.Layers.Core;
 using DrMadWill.Layers.Extensions.Paging;
-using Microsoft.EntityFrameworkCore;
 
-namespace DrMadWill.Layers.Abstractions.Repository.Repositories.Sys;
+namespace DrMadWill.Layers.Abstractions.Repository.Sys;
 
 public interface IReadRepository<TEntity, TPrimary> : IRepository<TEntity, TPrimary>
     where TEntity : class, IBaseEntity<TPrimary>, new()

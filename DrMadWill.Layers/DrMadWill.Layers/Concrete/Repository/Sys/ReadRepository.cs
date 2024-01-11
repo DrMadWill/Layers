@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using AutoMapper;
-using DrMadWill.Layers.Abstractions.Repository.Repositories.Sys;
+using DrMadWill.Layers.Abstractions.Repository.Sys;
 using DrMadWill.Layers.Core;
 using DrMadWill.Layers.Extensions;
 using DrMadWill.Layers.Extensions.Paging;

@@ -1,7 +1,7 @@
-using DrMadWill.Layers.Abstractions.Repository.Repositories.Sys;
+using DrMadWill.Layers.Abstractions.Repository.Sys;
 using DrMadWill.Layers.Core;
 
-namespace DrMadWill.Layers.Abstractions.Repository.Repositories.CQRS;
+namespace DrMadWill.Layers.Abstractions.Repository.CQRS;
 
 public interface IQueryRepositories : IDisposable
 {

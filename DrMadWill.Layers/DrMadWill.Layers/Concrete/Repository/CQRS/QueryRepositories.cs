@@ -1,7 +1,7 @@
 using System.Reflection;
 using AutoMapper;
-using DrMadWill.Layers.Abstractions.Repository.Repositories.CQRS;
-using DrMadWill.Layers.Abstractions.Repository.Repositories.Sys;
+using DrMadWill.Layers.Abstractions.Repository.CQRS;
+using DrMadWill.Layers.Abstractions.Repository.Sys;
 using DrMadWill.Layers.Concrete.Repository.Sys;
 using DrMadWill.Layers.Core;
 using Microsoft.EntityFrameworkCore;

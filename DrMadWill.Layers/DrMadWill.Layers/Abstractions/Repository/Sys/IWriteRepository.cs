@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using DrMadWill.Layers.Core;
 
-namespace DrMadWill.Layers.Abstractions.Repository.Repositories.Sys;
+namespace DrMadWill.Layers.Abstractions.Repository.Sys;
 
 public interface IWriteRepository<TEntity, in TPrimary> : IRepository<TEntity, TPrimary>
     where TEntity : class, IBaseEntity<TPrimary>, new()

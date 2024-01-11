@@ -1,6 +1,6 @@
 using System.Reflection;
 using AutoMapper;
-using DrMadWill.Layers.Abstractions.Repository.Repositories.CQRS;
+using DrMadWill.Layers.Abstractions.Repository.CQRS;
 using DrMadWill.Layers.Abstractions.Service;
 
 namespace DrMadWill.Layers.Concrete.Service;
