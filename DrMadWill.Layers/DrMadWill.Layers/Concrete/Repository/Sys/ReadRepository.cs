@@ -45,9 +45,13 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
         includeProperties.Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
     }
 
-    public virtual IQueryable<TEntity> GetAllQueryable(bool isDeleted = false) =>
-        isDeleted ? Table : Table.Where(s => s.IsDeleted != true);
-
+    public virtual IQueryable<TEntity> GetAllQueryable(bool tracking = false, bool isDeleted = false)
+    {
+        return BehaviorDeleteStatus(tracking ? Table : Table.AsNoTracking());
+        IQueryable<TEntity> BehaviorDeleteStatus(IQueryable<TEntity> entities)
+            => isDeleted ? entities : entities.Where(s => s.IsDeleted != true); 
+    }
+    
     public virtual IQueryable<TEntity> GetAllIncludingQueryable(bool isDeleted = false,
         params Expression<Func<TEntity, object>>[] includeProperties)
     {

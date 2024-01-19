@@ -7,7 +7,7 @@ namespace DrMadWill.Layers.Abstractions.Repository.Sys;
 public interface IReadRepository<TEntity, TPrimary> : IRepository<TEntity, TPrimary>
     where TEntity : class, IBaseEntity<TPrimary>, new()
 {
-    IQueryable<TEntity> GetAllQueryable(bool isDeleted = false);
+    IQueryable<TEntity> GetAllQueryable(bool tracking = false, bool isDeleted = false);
 
     IQueryable<TEntity> GetAllIncludingQueryable(bool isDeleted = false, params Expression<Func<TEntity, object>>[] includeProperties);
 
