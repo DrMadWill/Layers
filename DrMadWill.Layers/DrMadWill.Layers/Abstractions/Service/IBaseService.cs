@@ -1,5 +1,7 @@
 ﻿namespace DrMadWill.Layers.Abstractions.Service;
-
-public interface IBaseService : IDisposable
+/// <summary>
+/// Base class for service implementations.
+/// </summary>
+public interface IBaseService  : IDisposable 
 {
 }

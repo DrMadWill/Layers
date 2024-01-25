@@ -2,71 +2,105 @@ using System.Reflection;
 using AutoMapper;
 using DrMadWill.Layers.Abstractions.Repository.CQRS;
 using DrMadWill.Layers.Abstractions.Service;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
+using System.Collections.Generic;
 
-namespace DrMadWill.Layers.Concrete.Service;
-
-public abstract class ServiceManager : IServiceManager
+namespace DrMadWill.Layers.Concrete.Service
 {
-    private readonly Dictionary<Type, object> _services;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IQueryRepositories _queryRepositories;
-    private readonly IMapper _mapper;
-    protected readonly Type _assembly;
-    public ServiceManager(IUnitOfWork unitOfWork, IQueryRepositories queryRepositories, IMapper mapper,Type type)
+    /// <summary>
+    /// Base class for managing services.
+    /// </summary>
+    public abstract class ServiceManager : IServiceManager
     {
-        _unitOfWork = unitOfWork;
-        _queryRepositories = queryRepositories;
-        _mapper = mapper;
-        _services = new Dictionary<Type, object>();
-        _assembly = type;
-    }
-   
-    
-    public virtual TService Service<TService>()
-    {
-        if (_services.Keys.Contains(typeof(TService)))
-            return (TService)_services[typeof(TService)];
-        
-        var type = _assembly.Assembly.GetTypes()
-            .FirstOrDefault(x => !x.IsAbstract
-                                 && !x.IsInterface
-                                 && x.Name == typeof(TService).Name.Substring(1));;
+        protected readonly Dictionary<Type, object> Services;
+        protected readonly IUnitOfWork UnitOfWork;
+        protected readonly IQueryRepositories QueryRepositories;
+        protected readonly IMapper Mapper;
+        protected readonly Type Assembly;
+        protected readonly ILoggerFactory LoggerFactory;
 
-        if (type == null)
-            throw new KeyNotFoundException($"Service type is not found. Service Name { typeof(TService).Name.Substring(1)}");
-
-        var service = (TService)Activator.CreateInstance(type, _unitOfWork,_queryRepositories,_mapper)!;
-
-        _services.Add(typeof(TService), service);
-
-        return service;
-    }
-    
-    
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
+        /// <summary>
+        /// Constructor for ServiceManager.
+        /// </summary>
+        /// <param name="unitOfWork">The unit of work instance.</param>
+        /// <param name="queryRepositories">The query repositories instance.</param>
+        /// <param name="mapper">The AutoMapper instance for mapping entities.</param>
+        /// <param name="loggerFactory">The logger factory for creating loggers.</param>
+        /// <param name="type">The Type used for assembly information.</param>
+        public ServiceManager(IUnitOfWork unitOfWork, IQueryRepositories queryRepositories, IMapper mapper, ILoggerFactory loggerFactory, Type type)
         {
-            
-
-            // _services clear 
-            foreach (var service in _services.Values)
-                if (service is IDisposable disposableRepo)
-                    disposableRepo.Dispose();
-            
-            _services.Clear();
+            UnitOfWork = unitOfWork;
+            QueryRepositories = queryRepositories;
+            Mapper = mapper;
+            Services = new Dictionary<Type, object>();
+            Assembly = type;
+            LoggerFactory = loggerFactory;
         }
 
-    }
+        /// <summary>
+        /// Gets a service of the specified type.
+        /// </summary>
+        /// <typeparam name="TService">The type of service to retrieve.</typeparam>
+        /// <returns>An instance of the specified service type.</returns>
+        public virtual TService Service<TService>()
+        {
+            if (Services.Keys.Contains(typeof(TService)))
+                return (TService)Services[typeof(TService)];
 
-    ~ServiceManager()
-    {
-        Dispose(false);
+            var type = Assembly.Assembly.GetTypes()
+                .FirstOrDefault(x => !x.IsAbstract
+                                     && !x.IsInterface
+                                     && x.Name == typeof(TService).Name.Substring(1));
+
+            if (type == null)
+                throw new KeyNotFoundException($"Service type is not found. Service Name: {typeof(TService).Name.Substring(1)}");
+
+            var logger = LoggerFactory.CreateLogger(type);
+            var service = (TService)Activator.CreateInstance(type, UnitOfWork, QueryRepositories, Mapper, logger)!;
+
+            Services.Add(typeof(TService), service);
+
+            return service;
+        }
+
+        /// <summary>
+        /// Disposes of resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Disposes of resources.
+        /// </summary>
+        /// <param name="disposing">True if disposing; otherwise, false.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Dispose of services that implement IDisposable
+                foreach (var service in Services.Values)
+                {
+                    if (service is IDisposable disposableService)
+                    {
+                        disposableService.Dispose();
+                    }
+                }
+
+                Services.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Finalizer to ensure Dispose is called.
+        /// </summary>
+        ~ServiceManager()
+        {
+            Dispose(false);
+        }
     }
 }

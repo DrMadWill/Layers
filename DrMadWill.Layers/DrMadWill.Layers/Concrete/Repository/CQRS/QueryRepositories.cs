@@ -1,4 +1,3 @@
-using System.Reflection;
 using AutoMapper;
 using DrMadWill.Layers.Abstractions.Repository.CQRS;
 using DrMadWill.Layers.Abstractions.Repository.Sys;
@@ -6,77 +5,113 @@ using DrMadWill.Layers.Concrete.Repository.Sys;
 using DrMadWill.Layers.Core;
 using Microsoft.EntityFrameworkCore;
 
-namespace DrMadWill.Layers.Concrete.Repository.CQRS;
-
-public abstract class QueryRepositories : IQueryRepositories
+namespace DrMadWill.Layers.Concrete.Repository.CQRS
 {
-    private readonly DbContext _dbContext;
-    private readonly IMapper _mapper;
-    private readonly Dictionary<Type, object> _repositories;
-    protected readonly Type _assembly;
-    public QueryRepositories(DbContext orgContext, IMapper mapper,Type type)
+    /// <summary>
+    /// Base class for query repositories.
+    /// </summary>
+    public abstract class QueryRepositories : IQueryRepositories, IDisposable
     {
-        _dbContext = orgContext;
-        _mapper = mapper;
-        _repositories = new Dictionary<Type, object>();
-        _assembly = type;
-    }
+        protected readonly DbContext DbContext;
+        protected readonly IMapper Mapper;
+        protected readonly Dictionary<Type, object> Repositories;
+        protected readonly Type Assembly;
 
-    public virtual IReadRepository<TEntity, TPrimary> Repository<TEntity, TPrimary>()
-        where TEntity : class, IBaseEntity<TPrimary>, new()
-    {
-        if (_repositories.Keys.Contains(typeof(TEntity)))
-            return _repositories[typeof(TEntity)] as IReadRepository<TEntity, TPrimary>;
-
-        var repo = new ReadRepository<TEntity, TPrimary>(_dbContext, _mapper);
-        _repositories.Add(typeof(TEntity), repo);
-        return repo;
-    }
-
-    public virtual TRepository SpecialRepository<TRepository>()
-    {
-        if (_repositories.Keys.Contains(typeof(TRepository)))
-            return (TRepository)_repositories[typeof(TRepository)];
-
-        var type = _assembly.Assembly.GetTypes()
-            .FirstOrDefault(x => !x.IsAbstract
-                                 && !x.IsInterface
-                                 && x.Name == typeof(TRepository).Name.Substring(1));
-
-        if (type == null)
-            throw new KeyNotFoundException($"Repository type is not found.{ typeof(TRepository).Name.Substring(1)}");
-
-        var repository = (TRepository)Activator.CreateInstance(type, _dbContext, _mapper)!;
-
-        _repositories.Add(typeof(TRepository), repository);
-
-        return repository;
-    }
-
-    public virtual void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
+        /// <summary>
+        /// Constructor for QueryRepositories.
+        /// </summary>
+        /// <param name="orgContext">The DbContext to be used for queries.</param>
+        /// <param name="mapper">The AutoMapper instance for mapping entities.</param>
+        /// <param name="type">The Type used for assembly information.</param>
+        public QueryRepositories(DbContext orgContext, IMapper mapper, Type type)
         {
-            //_dbContext
-            _dbContext?.Dispose();
-
-            // _repositories clear
-            foreach (var repository in _repositories.Values)
-                if (repository is IDisposable disposableRepo)
-                    disposableRepo.Dispose();
-
-            _repositories.Clear();
+            DbContext = orgContext;
+            Mapper = mapper;
+            Repositories = new Dictionary<Type, object>();
+            Assembly = type;
         }
-    }
 
-    ~QueryRepositories()
-    {
-        Dispose(false);
+        /// <summary>
+        /// Gets a repository for the specified entity type.
+        /// </summary>
+        /// <typeparam name="TEntity">The entity type.</typeparam>
+        /// <typeparam name="TPrimary">The primary key type.</typeparam>
+        /// <returns>An instance of the read repository for the specified entity type.</returns>
+        public virtual IReadRepository<TEntity, TPrimary> Repository<TEntity, TPrimary>()
+            where TEntity : class, IBaseEntity<TPrimary>, new()
+        {
+            if (Repositories.Keys.Contains(typeof(TEntity)))
+                return Repositories[typeof(TEntity)] as IReadRepository<TEntity, TPrimary>;
+
+            var repo = new ReadRepository<TEntity, TPrimary>(DbContext, Mapper);
+            Repositories.Add(typeof(TEntity), repo);
+            return repo;
+        }
+
+        /// <summary>
+        /// Gets a special repository based on the provided type.
+        /// </summary>
+        /// <typeparam name="TRepository">The type of the special repository.</typeparam>
+        /// <returns>An instance of the special repository.</returns>
+        public virtual TRepository SpecialRepository<TRepository>()
+        {
+            if (Repositories.Keys.Contains(typeof(TRepository)))
+                return (TRepository)Repositories[typeof(TRepository)];
+
+            var type = Assembly.Assembly.GetTypes()
+                .FirstOrDefault(x => !x.IsAbstract
+                                     && !x.IsInterface
+                                     && x.Name == typeof(TRepository).Name.Substring(1));
+
+            if (type == null)
+                throw new KeyNotFoundException($"Repository type is not found: {typeof(TRepository).Name.Substring(1)}");
+
+            var repository = (TRepository)Activator.CreateInstance(type, DbContext, Mapper)!;
+
+            Repositories.Add(typeof(TRepository), repository);
+
+            return repository;
+        }
+
+        /// <summary>
+        /// Disposes of the DbContext and clears repository references.
+        /// </summary>
+        public virtual void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Disposes of resources.
+        /// </summary>
+        /// <param name="disposing">True if disposing; otherwise, false.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Dispose of DbContext
+                DbContext?.Dispose();
+
+                // Dispose of repositories that implement IDisposable
+                foreach (var repository in Repositories.Values)
+                {
+                    if (repository is IDisposable disposableRepo)
+                    {
+                        disposableRepo.Dispose();
+                    }
+                }
+
+                Repositories.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Finalizer to ensure Dispose is called.
+        /// </summary>
+        ~QueryRepositories()
+        {
+            Dispose(false);
+        }
     }
 }
