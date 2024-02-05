@@ -57,7 +57,7 @@ namespace DrMadWill.Layers.Concrete.Service
             if (type == null)
                 throw new KeyNotFoundException($"Service type is not found. Service Name: {typeof(TService).Name.Substring(1)}");
 
-            var logger = LoggerFactory.CreateLogger(type);
+            var logger = LoggerFactory.CreateLogger<IBaseService>();
             var service = (TService)Activator.CreateInstance(type, UnitOfWork, QueryRepositories, Mapper, logger)!;
 
             Services.Add(typeof(TService), service);

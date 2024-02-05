@@ -15,7 +15,7 @@ namespace DrMadWill.Layers.Concrete.Service
         protected readonly IUnitOfWork UnitOfWork;
         protected readonly IQueryRepositories QueryRepositories;
         protected readonly IMapper Mapper;
-        protected readonly ILogger Logger;
+        protected readonly ILogger<IBaseService> Logger;
 
         /// <summary>
         /// Constructor for BaseService.
@@ -25,7 +25,7 @@ namespace DrMadWill.Layers.Concrete.Service
         /// <param name="mapper">The AutoMapper instance for mapping entities.</param>
         /// <param name="logger">The logger instance for logging.</param>
         protected BaseService(IUnitOfWork unitOfWork, IQueryRepositories queryRepositories,
-            IMapper mapper, ILogger logger)
+            IMapper mapper, ILogger<IBaseService> logger)
         {
             UnitOfWork = unitOfWork;
             QueryRepositories = queryRepositories;
