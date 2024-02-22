@@ -1,11 +1,8 @@
-using System.Reflection;
 using AutoMapper;
 using DrMadWill.Layers.Abstractions.Repository.CQRS;
 using DrMadWill.Layers.Abstractions.Service;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
-using System.Collections.Generic;
+
 
 namespace DrMadWill.Layers.Concrete.Service
 {
@@ -46,7 +43,7 @@ namespace DrMadWill.Layers.Concrete.Service
         /// <returns>An instance of the specified service type.</returns>
         public virtual TService Service<TService>()
         {
-            if (Services.Keys.Contains(typeof(TService)))
+            if (Services.ContainsKey(typeof(TService)))
                 return (TService)Services[typeof(TService)];
 
             var type = Assembly.Assembly.GetTypes()
@@ -80,19 +77,17 @@ namespace DrMadWill.Layers.Concrete.Service
         /// <param name="disposing">True if disposing; otherwise, false.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!disposing) return;
+            // Dispose of services that implement IDisposable
+            foreach (var service in Services.Values)
             {
-                // Dispose of services that implement IDisposable
-                foreach (var service in Services.Values)
+                if (service is IDisposable disposableService)
                 {
-                    if (service is IDisposable disposableService)
-                    {
-                        disposableService.Dispose();
-                    }
+                    disposableService.Dispose();
                 }
-
-                Services.Clear();
             }
+
+            Services.Clear();
         }
 
         /// <summary>

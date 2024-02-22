@@ -38,4 +38,9 @@ public interface IUnitOfWork : IDisposable
     /// </summary>
     /// <returns>A task representing the asynchronous operation.</returns>
     public Task CommitAsync();
+
+    Task SynchronizationData<TEvent, TEntity, TPrimary>(TEvent @event, Action<string>? log = null)
+        where TEvent : class, IHasDelete
+        where TEntity : class, IOriginEntity<TPrimary>, new();
+
 }

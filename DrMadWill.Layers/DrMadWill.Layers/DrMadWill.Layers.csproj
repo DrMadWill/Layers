@@ -11,7 +11,7 @@
     <PackageProjectUrl>https://github.com/DrMadWill/Layers.git</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/DrMadWill/Layers.git</RepositoryUrl>
-    <Version>4.1</Version>
+    <Version>5</Version>
     <Title>DrMadWill.Layers</Title>
     <Authors>Dr.MadWill</Authors>
     <Description>Core Project</Description>

@@ -1,3 +1,4 @@
+using AutoMapper;
 using DrMadWill.Layers.Abstractions.Repository.CQRS;
 using DrMadWill.Layers.Abstractions.Repository.Sys;
 using DrMadWill.Layers.Concrete.Repository.Sys;
@@ -14,17 +15,20 @@ namespace DrMadWill.Layers.Concrete.Repository.CQRS
         protected readonly DbContext DbContext;
         protected readonly Dictionary<Type, object> Repositories;
         protected readonly Type Assembly;
+        protected readonly IMapper Mapper;
 
         /// <summary>
         /// Constructor for UnitOfWork.
         /// </summary>
-        /// <param name="orgContext">The DbContext to be used for unit of work.</param>
+        /// <param name="context">The DbContext to be used for unit of work.</param>
         /// <param name="type">The Type used for assembly information.</param>
-        public UnitOfWork(DbContext orgContext, Type type)
+        /// <param name="mapper">The IMapper for mapping class</param>
+        public UnitOfWork(DbContext context, Type type, IMapper mapper)
         {
-            DbContext = orgContext;
+            DbContext = context;
             Repositories = new Dictionary<Type, object>();
             Assembly = type;
+            Mapper = mapper;
         }
 
         /// <summary>
@@ -84,6 +88,32 @@ namespace DrMadWill.Layers.Concrete.Repository.CQRS
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
         public virtual Task CommitAsync() => DbContext.SaveChangesAsync();
+
+        public virtual async Task SynchronizationData<TEvent, TEntity, TPrimary>(TEvent @event,Action<string>? log = null) 
+            where TEvent : class, IHasDelete 
+            where TEntity : class, IOriginEntity<TPrimary>, new()
+        {
+            var repo = OriginRepository<TEntity, TPrimary>();
+            var dict = Mapper.Map<TEntity>(@event);
+            if (@event.IsDeleted == true)
+            {
+                try
+                {
+                    await repo.RemoveAsync(dict);
+                    await CommitAsync();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    log?.Invoke(nameof(TEvent) + $" error occur | not deleted | err : {e}");
+                }
+            }
+            else
+            {
+                await repo.UpdateAsync(dict);
+                await CommitAsync();
+            }
+        }
 
         /// <summary>
         /// Disposes of the DbContext and clears repository references.
