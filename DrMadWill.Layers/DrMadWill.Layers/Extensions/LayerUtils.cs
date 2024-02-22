@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 
@@ -84,7 +85,10 @@ namespace DrMadWill.Layers.Extensions
         /// <returns>A JSON string representing the object.</returns>
         public static string JsonString(this object obj)
         {
-            return Regex.Unescape(JsonConvert.SerializeObject(obj));
+            return Regex.Unescape(JsonConvert.SerializeObject(obj,new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            }));
         }
     }
 }

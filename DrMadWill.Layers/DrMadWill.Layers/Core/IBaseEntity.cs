@@ -3,13 +3,10 @@
     /// <summary>
     /// Represents the base interface for entities in the application.
     /// </summary>
-    /// <typeparam name="Type">The type of the Id property.</typeparam>
-    public interface IBaseEntity<Type>
+    /// <typeparam name="T">The type of the Id property.</typeparam>
+    public interface IBaseEntity<T> : IOriginEntity<T>
     {
-        /// <summary>
-        /// Gets or sets the unique identifier for the entity.
-        /// </summary>
-        Type? Id { get; set; }
+       
 
         /// <summary>
         /// Gets or sets the date and time when the entity was created.

@@ -54,7 +54,7 @@ namespace DrMadWill.Layers.Extensions
         /// <param name="languageCode">The language code to determine which properties to copy.</param>
         /// <returns>The localized list of DTOs.</returns>
         public static IList<TDto> GetLocalizedList<TEntity, TDto, TPrimary>([NotNull] IList<TEntity> entities, [NotNull] IList<TDto> dtos, string languageCode)
-            where TEntity : class, IBaseEntity<TPrimary>
+            where TEntity : class, IOriginEntity<TPrimary>
             where TDto : class, IBaseDto<TPrimary>
         {
             foreach (var entity in entities)

@@ -8,13 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DrMadWill.Layers.Concrete.Repository.Sys;
 
-/// <summary>
-/// Represents a generic read-only repository for accessing entities of type TEntity with primary key of type TPrimary.
-/// </summary>
-/// <typeparam name="TEntity">The type of the entity.</typeparam>
-/// <typeparam name="TPrimary">The type of the primary key for the entity.</typeparam>
-public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrimary>
-    where TEntity : class, IBaseEntity<TPrimary>, new()
+public class ReadOriginRepository<TEntity, TPrimary> : IReadOriginRepository<TEntity, TPrimary>
+    where TEntity : class, IOriginEntity<TPrimary>, new()
 {
     protected readonly DbContext DbContext;
     protected readonly IMapper Mapper;
@@ -25,11 +20,11 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     public DbSet<TEntity> Table { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ReadRepository{TEntity, TPrimary}"/> class.
+    /// Initializes a new instance of the <see cref="ReadOriginRepository{TEntity, TPrimary}"/> class.
     /// </summary>
     /// <param name="dbContext">The database context to be used by the repository.</param>
     /// <param name="mapper">The AutoMapper instance for entity-DTO mappings.</param>
-    public ReadRepository(DbContext dbContext, IMapper mapper)
+    public ReadOriginRepository(DbContext dbContext, IMapper mapper)
     {
         DbContext = dbContext;
         Mapper = mapper;
@@ -60,7 +55,7 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// <summary>
     /// Destructor for ReadRepository.
     /// </summary>
-    ~ReadRepository()
+    ~ReadOriginRepository()
     {
         Dispose(false);
     }
@@ -70,7 +65,8 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// </summary>
     /// <param name="query">The query to which the include properties will be added.</param>
     /// <param name="includeProperties">A collection of expressions indicating the properties to be included in the query.</param>
-    private void BindIncludeProperties(IQueryable<TEntity> query, IEnumerable<Expression<Func<TEntity, object>>> includeProperties)
+    private void BindIncludeProperties(IQueryable<TEntity> query,
+        IEnumerable<Expression<Func<TEntity, object>>> includeProperties)
     {
         includeProperties.Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
     }
@@ -79,23 +75,20 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// Retrieves an IQueryable for all entities of type TEntity, optionally including deleted entities and/or applying tracking.
     /// </summary>
     /// <param name="tracking">If true, the query will track changes to the entities. Default is false.</param>
-    /// <param name="isDeleted">If true, the query will include entities that are marked as deleted. Default is false.</param>
     /// <returns>An IQueryable of all entities of type TEntity.</returns>
-    public virtual IQueryable<TEntity> GetAllQueryable(bool tracking = false, bool isDeleted = false)
+    public virtual IQueryable<TEntity> GetAllQueryable(bool tracking = false)
     {
-        return BehaviorDeleteStatus(tracking ? Table : Table.AsNoTracking());
-
-        IQueryable<TEntity> BehaviorDeleteStatus(IQueryable<TEntity> entities)
-            => isDeleted ? entities : entities.Where(s => s.IsDeleted != true); 
+        return (tracking ? Table : Table.AsNoTracking());
     }
 
-    
+
     /// <summary>
     /// Retrieves an IQueryable for all entities of type TEntity, including specified related entities.
     /// </summary>
     /// <param name="includeProperties">Expressions indicating the related entities to include in the query.</param>
     /// <returns>An IQueryable of all entities of type TEntity with specified related entities included.</returns>
-    public virtual IQueryable<TEntity> GetAllIncludingQueryable(params Expression<Func<TEntity, object>>[] includeProperties)
+    public virtual IQueryable<TEntity> GetAllIncludingQueryable(
+        params Expression<Func<TEntity, object>>[] includeProperties)
     {
         var query = GetAllQueryable();
         BindIncludeProperties(query, includeProperties);
@@ -106,34 +99,32 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// <summary>
     /// Asynchronously retrieves all entities of type TEntity as a list.
     /// </summary>
-    /// <param name="isDeleted">If true, includes entities marked as deleted in the result. Default is false.</param>
     /// <param name="tracking">If true, the query will track changes to the entities. Default is false.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a list of all entities of type TEntity.</returns>
-    public virtual Task<List<TEntity>> GetAllListAsync(bool isDeleted = false, bool tracking = false) =>
-        GetAllQueryable(tracking, isDeleted).ToListAsync();
+    public virtual Task<List<TEntity>> GetAllListAsync(bool tracking = false) =>
+        GetAllQueryable(tracking).ToListAsync();
 
 
     /// <summary>
     /// Asynchronously retrieves all entities of type TEntity as a list and maps them to a list of DTOs of type TDto.
     /// </summary>
-    /// <param name="isDeleted">If true, includes entities marked as deleted in the result. Default is false.</param>
     /// <typeparam name="TDto">The type of data transfer object to which the entities will be mapped.</typeparam>
     /// <returns>A task that represents the asynchronous operation. The task result contains a list of DTOs of type TDto mapped from the entities of type TEntity.</returns>
-    public virtual async Task<List<TDto>> GetAllListAsync<TDto>(bool isDeleted = false)
+    public virtual async Task<List<TDto>> GetAllListAsync<TDto>()
         where TDto : class, IBaseDto<TPrimary>
-        => (await GetAllListAsync(isDeleted)).Select(Mapper.Map<TDto>).ToList();
+        => (await GetAllListAsync()).Select(Mapper.Map<TDto>).ToList();
 
 
     /// <summary>
     /// Asynchronously retrieves all entities of type TEntity, maps them to a list of DTOs of type TDto, and applies localization based on the specified language code.
     /// </summary>
     /// <param name="languageCode">The language code to apply for localization.</param>
-    /// <param name="isDeleted">If true, includes entities marked as deleted in the result. Default is false.</param>
     /// <typeparam name="TDto">The type of data transfer object to which the entities will be mapped.</typeparam>
     /// <returns>A task that represents the asynchronous operation. The task result contains a localized list of DTOs of type TDto.</returns>
-    public virtual async Task<List<TDto>> GetAllListAsync<TDto>(string languageCode, bool isDeleted = false) where TDto : class, IBaseDto<TPrimary>
+    public virtual async Task<List<TDto>> GetAllListAsync<TDto>(string languageCode)
+        where TDto : class, IBaseDto<TPrimary>
     {
-        var data = await GetAllListAsync(isDeleted);
+        var data = await GetAllListAsync();
         var mapDto = data.Select(Mapper.Map<TDto>).ToList();
         return LanguageHelper.GetLocalizedList<TEntity, TDto, TPrimary>(data, mapDto, languageCode).ToList();
     }
@@ -158,7 +149,8 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
         params Expression<Func<TEntity, object>>[] includeProperties) where TDto : class, IBaseDto<TPrimary>
         => (await GetAllListIncludingAsync(includeProperties)).Select(Mapper.Map<TDto>).ToList();
 
-    public virtual async Task<List<TDto>> GetAllListIncludingAsync<TDto>(string languageCode, params Expression<Func<TEntity, object>>[] includeProperties) where TDto : class, IBaseDto<TPrimary>
+    public virtual async Task<List<TDto>> GetAllListIncludingAsync<TDto>(string languageCode,
+        params Expression<Func<TEntity, object>>[] includeProperties) where TDto : class, IBaseDto<TPrimary>
     {
         var data = await GetAllListIncludingAsync(includeProperties);
         return LanguageHelper
@@ -192,7 +184,8 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// <param name="id">The primary key of the entity to find.</param>
     /// <typeparam name="TDto">The type of data transfer object to which the entity will be mapped.</typeparam>
     /// <returns>A ValueTask representing the asynchronous operation. The task result contains the localized DTO of type TDto.</returns>
-    public virtual async ValueTask<TDto> FindAsync<TDto>(string languageCode, TPrimary id) where TDto : class, IBaseDto<TPrimary>
+    public virtual async ValueTask<TDto> FindAsync<TDto>(string languageCode, TPrimary id)
+        where TDto : class, IBaseDto<TPrimary>
     {
         var data = await FindAsync(id);
         return LanguageHelper.GetLocalized(data, Mapper.Map<TDto>(data), languageCode);
@@ -214,7 +207,8 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// <param name="predicate">An expression to test each entity for a condition.</param>
     /// <typeparam name="TDto">The type of data transfer object to which the entity will be mapped.</typeparam>
     /// <returns>A Task representing the asynchronous operation. The task result contains the DTO of type TDto mapped from the first entity that satisfies the condition, or null if no such entity is found.</returns>
-    public async Task<TDto?> GetFirstAsync<TDto>(Expression<Func<TEntity, bool>> predicate) where TDto : class, IBaseDto<TPrimary>
+    public async Task<TDto?> GetFirstAsync<TDto>(Expression<Func<TEntity, bool>> predicate)
+        where TDto : class, IBaseDto<TPrimary>
     {
         var data = await GetFirstAsync(predicate);
         return data == null ? null : Mapper.Map<TDto>(data);
@@ -251,7 +245,8 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// <param name="predicate">An expression to test each entity for a condition.</param>
     /// <param name="includeProperties">Expressions indicating the related entities to include in the query.</param>
     /// <returns>An IQueryable of entities that satisfy the specified condition with specified related entities included.</returns>
-    public virtual IQueryable<TEntity> FindByIncludingQueryable(Expression<Func<TEntity, bool>> predicate, params Expression<Func<TEntity, object>>[] includeProperties)
+    public virtual IQueryable<TEntity> FindByIncludingQueryable(Expression<Func<TEntity, bool>> predicate,
+        params Expression<Func<TEntity, object>>[] includeProperties)
     {
         var query = GetAllQueryable();
         query = includeProperties.Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
@@ -290,9 +285,9 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     public virtual Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate)
         => GetAllQueryable().CountAsync(predicate);
 
-    
-    
-  
+
+
+
     /// <summary>
     /// IQueryable | Asynchronously retrieves a paged result from a given IQueryable source.
     /// </summary>
@@ -323,7 +318,8 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
         return new SourcePaged<TDto>
         {
             PagingModel = new PageModel(await source.CountAsync(), req.Page, Paginate<TEntity>.PerPage),
-            Source = (await Paginate<TEntity>.Paging(source, req.Page).ToListAsync()).Select(Mapper.Map<TDto>).ToList(),
+            Source =
+                (await Paginate<TEntity>.Paging(source, req.Page).ToListAsync()).Select(Mapper.Map<TDto>).ToList(),
         };
     }
 
@@ -337,7 +333,8 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// <typeparam name="TDto">The type of data transfer object to which the entities will be mapped.</typeparam>
     /// <returns>A Task representing the asynchronous operation. The task result contains a paged result of localized DTOs of type TDto.</returns>
     /// <exception cref="ArgumentNullException">Thrown if the request details are null.</exception>
-    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(IQueryable<TEntity> source, PageReq req, string languageCode)
+    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(IQueryable<TEntity> source, PageReq req,
+        string languageCode)
         where TDto : class, IBaseDto<TPrimary>
     {
         if (req == null) throw new ArgumentNullException(nameof(req) + " is null");
@@ -350,13 +347,14 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
         return new SourcePaged<TDto>
         {
             PagingModel = new PageModel(await source.CountAsync(), req.Page, Paginate<TEntity>.PerPage),
-            Source = LanguageHelper.GetLocalizedList<TEntity, TDto, TPrimary>(data, data.Select(Mapper.Map<TDto>).ToList(), languageCode)
+            Source = LanguageHelper.GetLocalizedList<TEntity, TDto, TPrimary>(data,
+                data.Select(Mapper.Map<TDto>).ToList(), languageCode)
         };
     }
 
-    
-    
-    
+
+
+
     /// <summary>
     /// Predicate | Asynchronously retrieves a paged result for entities of type TEntity that satisfy a given predicate and includes specified related entities.
     /// </summary>
@@ -364,7 +362,8 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// <param name="req">The pagination request details.</param>
     /// <param name="includeProperties">Expressions indicating the related entities to include in the query.</param>
     /// <returns>A Task representing the asynchronous operation. The task result contains a paged result of entities that satisfy the condition.</returns>
-    public virtual async Task<SourcePaged<TEntity>> GetSourcePagedAsync(Expression<Func<TEntity, bool>> predicate, PageReq req, params Expression<Func<TEntity, object>>[] includeProperties)
+    public virtual async Task<SourcePaged<TEntity>> GetSourcePagedAsync(Expression<Func<TEntity, bool>> predicate,
+        PageReq req, params Expression<Func<TEntity, object>>[] includeProperties)
         => await GetSourcePagedAsync(GetAllIncludingQueryable(includeProperties).Where(predicate), req);
 
 
@@ -376,10 +375,11 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// <param name="includeProperties">Expressions indicating the related entities to include in the query.</param>
     /// <typeparam name="TDto">The type of data transfer object to which the entities will be mapped.</typeparam>
     /// <returns>A Task representing the asynchronous operation. The task result contains a paged result of DTOs of type TDto that satisfy the condition.</returns>
-    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(Expression<Func<TEntity, bool>> predicate, PageReq req, params Expression<Func<TEntity, object>>[] includeProperties)
+    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(Expression<Func<TEntity, bool>> predicate,
+        PageReq req, params Expression<Func<TEntity, object>>[] includeProperties)
         where TDto : class, IBaseDto<TPrimary>
         => await GetSourcePagedAsync<TDto>(GetAllIncludingQueryable(includeProperties).Where(predicate), req);
-    
+
     /// <summary>
     ///  Language and Predicate Support | Asynchronously retrieves a paged result for entities of type TEntity that satisfy a given predicate, includes specified related entities, maps the results to DTOs of type TDto, and applies localization based on the specified language code.
     /// </summary>
@@ -389,22 +389,25 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// <param name="includeProperties">Expressions indicating the related entities to include in the query.</param>
     /// <typeparam name="TDto">The type of data transfer object to which the entities will be mapped.</typeparam>
     /// <returns>A Task representing the asynchronous operation. The task result contains a paged result of localized DTOs of type TDto that satisfy the condition.</returns>
-    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(Expression<Func<TEntity, bool>> predicate, PageReq req, string languageCode, params Expression<Func<TEntity, object>>[] includeProperties)
+    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(Expression<Func<TEntity, bool>> predicate,
+        PageReq req, string languageCode, params Expression<Func<TEntity, object>>[] includeProperties)
         where TDto : class, IBaseDto<TPrimary>
-        => await GetSourcePagedAsync<TDto>(GetAllIncludingQueryable(includeProperties).Where(predicate), req, languageCode);
+        => await GetSourcePagedAsync<TDto>(GetAllIncludingQueryable(includeProperties).Where(predicate), req,
+            languageCode);
 
-    
-    
-        
+
+
+
     /// <summary>
     /// Query Search | Asynchronously retrieves a paged result using a custom query function applied to the entities of type TEntity.
     /// </summary>
     /// <param name="req">The pagination request details.</param>
     /// <param name="func">A function to transform the IQueryable before pagination is applied.</param>
     /// <returns>A Task representing the asynchronous operation. The task result contains a paged result of entities after applying the custom query function.</returns>
-    public virtual async Task<SourcePaged<TEntity>> GetSourcePagedAsync(PageReq req, Func<IQueryable<TEntity>, IQueryable<TEntity>>? func = null)
+    public virtual async Task<SourcePaged<TEntity>> GetSourcePagedAsync(PageReq req,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? func = null)
         => await GetSourcePagedAsync(func == null ? GetAllQueryable() : func(GetAllQueryable()), req);
-    
+
     /// <summary>
     /// DTO and Query Search | Asynchronously retrieves a paged result using a custom query function applied to the entities of type TEntity and maps the results to DTOs of type TDto.
     /// </summary>
@@ -412,10 +415,11 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// <param name="func">A function to transform the IQueryable before pagination is applied.</param>
     /// <typeparam name="TDto">The type of data transfer object to which the entities will be mapped.</typeparam>
     /// <returns>A Task representing the asynchronous operation. The task result contains a paged result of DTOs of type TDto after applying the custom query function.</returns>
-    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(PageReq req, Func<IQueryable<TEntity>, IQueryable<TEntity>>? func = null)
+    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(PageReq req,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? func = null)
         where TDto : class, IBaseDto<TPrimary>
         => await GetSourcePagedAsync<TDto>(func == null ? GetAllQueryable() : func(GetAllQueryable()), req);
-    
+
     /// <summary>
     /// Language, DTO, and Query Search Support | Asynchronously retrieves a paged result using a custom query function applied to the entities of type TEntity, maps the results to DTOs of type TDto, and applies localization based on the specified language code.
     /// </summary>
@@ -424,21 +428,24 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// <param name="func">A function to transform the IQueryable before pagination is applied.</param>
     /// <typeparam name="TDto">The type of data transfer object to which the entities will be mapped.</typeparam>
     /// <returns>A Task representing the asynchronous operation. The task result contains a paged result of localized DTOs of type TDto after applying the custom query function.</returns>
-    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(PageReq req, string languageCode, Func<IQueryable<TEntity>, IQueryable<TEntity>>? func = null)
+    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(PageReq req, string languageCode,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? func = null)
         where TDto : class, IBaseDto<TPrimary>
-        => await GetSourcePagedAsync<TDto>(func == null ? GetAllQueryable() : func(GetAllQueryable()), req, languageCode);
+        => await GetSourcePagedAsync<TDto>(func == null ? GetAllQueryable() : func(GetAllQueryable()), req,
+            languageCode);
 
-    
-    
-    
-  
+
+
+
+
     /// <summary>
     /// Func | Asynchronously retrieves a paged result using a custom function applied to a list of entities of type TEntity.
     /// </summary>
     /// <param name="req">The pagination request details.</param>
     /// <param name="func">A function to transform the list of entities before pagination is applied.</param>
     /// <returns>A Task representing the asynchronous operation. The task result contains a paged result of entities after applying the custom function.</returns>
-    public virtual async Task<SourcePaged<TEntity>> GetSourcePagedAsync(PageReq req, Func<List<TEntity>, List<TEntity>>? func = null)
+    public virtual async Task<SourcePaged<TEntity>> GetSourcePagedAsync(PageReq req,
+        Func<List<TEntity>, List<TEntity>>? func = null)
     {
         var source = GetAllQueryable();
         req.Page = req.Page == 0 ? 1 : req.Page;
@@ -449,10 +456,12 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
         return new SourcePaged<TEntity>
         {
             PagingModel = new PageModel(await source.CountAsync(), req.Page, Paginate<TEntity>.PerPage),
-            Source = func == null ? await Paginate<TEntity>.Paging(source, req.Page).ToListAsync() : func((await Paginate<TEntity>.Paging(source, req.Page).ToListAsync())),
+            Source = func == null
+                ? await Paginate<TEntity>.Paging(source, req.Page).ToListAsync()
+                : func((await Paginate<TEntity>.Paging(source, req.Page).ToListAsync())),
         };
     }
-    
+
     /// <summary>
     /// Func DTO | Asynchronously retrieves a paged result using a custom function applied to a list of entities of type TEntity and maps the results to DTOs of type TDto.
     /// </summary>
@@ -460,7 +469,8 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// <param name="func">A function to transform the list of entities before pagination is applied.</param>
     /// <typeparam name="TDto">The type of data transfer object to which the entities will be mapped.</typeparam>
     /// <returns>A Task representing the asynchronous operation. The task result contains a paged result of DTOs of type TDto after applying the custom function.</returns>
-    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(PageReq req, Func<List<TEntity>, List<TEntity>>? func = null) where TDto : class, IBaseDto<TPrimary>
+    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(PageReq req,
+        Func<List<TEntity>, List<TEntity>>? func = null) where TDto : class, IBaseDto<TPrimary>
     {
         var source = GetAllQueryable();
         req.Page = req.Page == 0 ? 1 : req.Page;
@@ -471,8 +481,10 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
         return new SourcePaged<TDto>
         {
             PagingModel = new PageModel(await source.CountAsync(), req.Page, Paginate<TEntity>.PerPage),
-            Source = func == null ? (await Paginate<TEntity>.Paging(source, req.Page).ToListAsync()).Select(Mapper.Map<TDto>).ToList() :
-                func((await Paginate<TEntity>.Paging(source, req.Page).ToListAsync())).Select(Mapper.Map<TDto>).ToList(),
+            Source = func == null
+                ? (await Paginate<TEntity>.Paging(source, req.Page).ToListAsync()).Select(Mapper.Map<TDto>).ToList()
+                : func((await Paginate<TEntity>.Paging(source, req.Page).ToListAsync())).Select(Mapper.Map<TDto>)
+                    .ToList(),
         };
     }
 
@@ -484,7 +496,8 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
     /// <param name="func">A function to transform the list of entities before pagination is applied.</param>
     /// <typeparam name="TDto">The type of data transfer object to which the entities will be mapped.</typeparam>
     /// <returns>A Task representing the asynchronous operation. The task result contains a paged result of localized DTOs of type TDto after applying the custom function.</returns>
-    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(PageReq req, string languageCode, Func<List<TEntity>, List<TEntity>>? func = null) where TDto : class, IBaseDto<TPrimary>
+    public virtual async Task<SourcePaged<TDto>> GetSourcePagedAsync<TDto>(PageReq req, string languageCode,
+        Func<List<TEntity>, List<TEntity>>? func = null) where TDto : class, IBaseDto<TPrimary>
     {
         var source = GetAllQueryable();
         req.Page = req.Page == 0 ? 1 : req.Page;
@@ -499,8 +512,8 @@ public class ReadRepository<TEntity, TPrimary> : IReadRepository<TEntity, TPrima
         return new SourcePaged<TDto>
         {
             PagingModel = new PageModel(await source.CountAsync(), req.Page, Paginate<TEntity>.PerPage),
-            Source = LanguageHelper.GetLocalizedList<TEntity, TDto, TPrimary>(data, data.Select(Mapper.Map<TDto>).ToList(), languageCode)
+            Source = LanguageHelper.GetLocalizedList<TEntity, TDto, TPrimary>(data,
+                data.Select(Mapper.Map<TDto>).ToList(), languageCode)
         };
     }
-
 }

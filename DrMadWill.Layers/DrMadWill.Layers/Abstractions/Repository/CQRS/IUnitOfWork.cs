@@ -15,6 +15,17 @@ public interface IUnitOfWork : IDisposable
     /// <returns>An instance of the write repository for the specified entity type.</returns>
     IWriteRepository<TEntity, TPrimary> Repository<TEntity, TPrimary>()
         where TEntity : class, IBaseEntity<TPrimary>, new();
+    
+    
+    /// <summary>
+    /// Gets a origin write repository for the specified entity type.
+    /// </summary>
+    /// <typeparam name="TEntity">The entity type.</typeparam>
+    /// <typeparam name="TPrimary">The primary key type.</typeparam>
+    /// <returns>An instance of the write repository for the specified entity type.</returns>
+    IWriteOriginRepository<TEntity, TPrimary> OriginRepository<TEntity, TPrimary>()
+        where TEntity : class, IOriginEntity<TPrimary>, new();
+    
     /// <summary>
     /// Gets a special repository based on the provided type.
     /// </summary>

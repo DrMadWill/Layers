@@ -1,13 +1,8 @@
-using System.Reflection;
 using DrMadWill.Layers.Abstractions.Repository.CQRS;
 using DrMadWill.Layers.Abstractions.Repository.Sys;
 using DrMadWill.Layers.Concrete.Repository.Sys;
 using DrMadWill.Layers.Core;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DrMadWill.Layers.Concrete.Repository.CQRS
 {
@@ -45,6 +40,16 @@ namespace DrMadWill.Layers.Concrete.Repository.CQRS
                 return Repositories[typeof(TEntity)] as IWriteRepository<TEntity, TPrimary>;
 
             var repo = new WriteRepository<TEntity, TPrimary>(DbContext);
+            Repositories.Add(typeof(TEntity), repo);
+            return repo;
+        }
+
+        public IWriteOriginRepository<TEntity, TPrimary> OriginRepository<TEntity, TPrimary>() where TEntity : class, IOriginEntity<TPrimary>, new()
+        {
+            if (Repositories.Keys.Contains(typeof(TEntity)))
+                return Repositories[typeof(TEntity)] as IWriteOriginRepository<TEntity, TPrimary>;
+
+            var repo = new WriteOriginRepository<TEntity, TPrimary>(DbContext);
             Repositories.Add(typeof(TEntity), repo);
             return repo;
         }

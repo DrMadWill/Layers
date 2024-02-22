@@ -48,6 +48,16 @@ namespace DrMadWill.Layers.Concrete.Repository.CQRS
             return repo;
         }
 
+        public IReadOriginRepository<TEntity, TPrimary> OriginRepository<TEntity, TPrimary>() where TEntity : class, IOriginEntity<TPrimary>, new()
+        {
+            if (Repositories.Keys.Contains(typeof(TEntity)))
+                return Repositories[typeof(TEntity)] as IReadOriginRepository<TEntity, TPrimary>;
+
+            var repo = new ReadOriginRepository<TEntity, TPrimary>(DbContext, Mapper);
+            Repositories.Add(typeof(TEntity), repo);
+            return repo; 
+        }
+
         /// <summary>
         /// Gets a special repository based on the provided type.
         /// </summary>
