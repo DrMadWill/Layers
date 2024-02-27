@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrMadWill.Layers.Core", "DrMadWill.Layers.Core\DrMadWill.Layers.Core.csproj", "{CD1400BF-0F62-40DC-A2D0-0A34E6F103D6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrMadWill.Layers.Repository", "DrMadWill.Layers.Repository\DrMadWill.Layers.Repository.csproj", "{A51F4F2E-FC78-499C-9DF1-36B4A277B90C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrMadWill.Layers.Services", "DrMadWill.Layers.Services\DrMadWill.Layers.Services.csproj", "{1A1DA99C-F3D3-484D-B6D5-5E404F7DEED3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CD1400BF-0F62-40DC-A2D0-0A34E6F103D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD1400BF-0F62-40DC-A2D0-0A34E6F103D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD1400BF-0F62-40DC-A2D0-0A34E6F103D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD1400BF-0F62-40DC-A2D0-0A34E6F103D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A51F4F2E-FC78-499C-9DF1-36B4A277B90C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A51F4F2E-FC78-499C-9DF1-36B4A277B90C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A51F4F2E-FC78-499C-9DF1-36B4A277B90C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A51F4F2E-FC78-499C-9DF1-36B4A277B90C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A1DA99C-F3D3-484D-B6D5-5E404F7DEED3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A1DA99C-F3D3-484D-B6D5-5E404F7DEED3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A1DA99C-F3D3-484D-B6D5-5E404F7DEED3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A1DA99C-F3D3-484D-B6D5-5E404F7DEED3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

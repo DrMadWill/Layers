@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Title>DrMadWill.Layers.Core</Title>
+        <Authors>DrMadWill</Authors>
+        <PackageIcon>Dr.png</PackageIcon>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>Core</PackageTags>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Version>1.2</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Update="Dr.png">
+        <Pack>True</Pack>
+        <PackagePath></PackagePath>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MediatR" Version="12.1.1" />
+    </ItemGroup>
+
+</Project>
