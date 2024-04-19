@@ -14,14 +14,15 @@ To install Layers, you will need .
         - Copy code `git clone https://github.com/DrMadWill/Layers.git`
 2. You can install the package form your project using the following command:
     - nuget
-        - terminal>  `dotnet add package DrMadWill.Layers --version 3.1.0`
-        - nuget-terminal> `NuGet\Install-Package DrMadWill.Layers -Version 3.1.0`
+        -` terminal`>  `dotnet add package DrMadWill.Layers --version 3.1.0`
+        - `nuget-terminal`> `NuGet\Install-Package DrMadWill.Layers -Version 3.1.0`
 
 
 ## Usage
 
 Here is how you can use Layers:
-This class must be added your project.
+install project your service. If you downloading Layer.Repository then you must be
+
 ```cs
 
 public static class ServiceRegistration  
@@ -30,15 +31,12 @@ public static class ServiceRegistration
     {  
         if (services == null) throw new AggregateException("service is null");  
   
-        #region Repositories  
-        services.AddScoped(typeof(IReadRepository<,>), typeof(ReadRepository<,>));  
-        services.AddScoped(typeof(IWriteRepository<,>), typeof(WriteRepository<,>));  
-        services.AddScoped<IQueryRepositories, DQueryRepositories>();   
-        services.AddScoped<IUnitOfWork, DUnitOfWork>();  
-        #endregion  
-  
-		#region Services  
-        services.AddScoped<IServiceManager, DServiceManager>();    
+        #region Repositories
+        services.LayerRepositoriesRegister<DUnitOfWork, DQueryRepositories>();
+        #endregion
+
+        #region Services
+        services.LayerServicesRegister<DServiceManager>();
         #endregion  
   
   }  
@@ -48,31 +46,30 @@ public static class ServiceRegistration
 - DQueryRepositories
 ```cs
 
-public class DQueryRepositories : QueryRepositories, IQueryRepositories  
-{  
-    public DQueryRepositories(DictContext dictContext, IMapper mapper) : base(dictContext, mapper, typeof(ServiceRegistration))  
-    {  
-    }  
+public class DQueryRepositories : QueryRepositories, IQueryRepositories
+{
+    public DQueryRepositories(DictContext dictContext, IMapper mapper) : base(dictContext, mapper, typeof(ServiceRegistration))
+    {
+    }
 }
 ```
 - DUnitOfWork
 ```cs
-public class DUnitOfWork:UnitOfWork  
-{  
-    public DUnitOfWork(DictContext dictContext) : base(dictContext,typeof(ServiceRegistration))  
-    {  
-    }  
+public class DUnitOfWork:UnitOfWork
+{
+    public DUnitOfWork(DictContext dictContext,IMapper mapper) : base(dictContext,typeof(ServiceRegistration),mapper)
+    {
+    }
 }
 ```
 - DServiceManager
 ```cs
-public class DServiceManager :ServiceManager  
-{  
-    public DServiceManager(IUnitOfWork unitOfWork, IQueryRepositories queryRepositories, IMapper mapper,ILoggerFactory loggerFactory) :   
-        base(unitOfWork, queryRepositories, mapper,loggerFactory,typeof(ServiceRegistration))  
-    {  
-    }  
-      
+public class DServiceManager :ServiceManager
+{
+    public DServiceManager(IUnitOfWork unitOfWork, IQueryRepositories queryRepositories, IMapper mapper,ILoggerFactory loggerFactory) : 
+        base(unitOfWork, queryRepositories, mapper,loggerFactory,typeof(ServiceRegistration))
+    {
+    }
 }
 ```
 
