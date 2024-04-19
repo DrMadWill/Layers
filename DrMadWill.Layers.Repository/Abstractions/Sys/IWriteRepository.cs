@@ -12,6 +12,14 @@ public interface IWriteRepository<TEntity, in TPrimary> : IRepository<TEntity, T
 
 {
     /// <summary>
+    /// Retrieves an IQueryable for all entities of type TEntity, optionally including deleted entities and/or applying tracking.
+    /// </summary>
+    /// <param name="tracking">If true, the query will track changes to the entities. Default is false.</param>
+    /// <param name="isDeleted">If true, the query will include entities that are marked as deleted. Default is false.</param>
+    /// <returns>An IQueryable of all entities of type TEntity.</returns>
+    IQueryable<TEntity> GetAllQueryable(bool tracking = false, bool isDeleted = false);
+    
+    /// <summary>
     /// Asynchronously adds a new entity to the DbSet.
     /// </summary>
     /// <param name="entity">The entity to add.</param>

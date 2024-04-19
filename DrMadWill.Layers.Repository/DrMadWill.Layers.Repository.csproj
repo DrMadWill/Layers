@@ -9,7 +9,7 @@
         <Authors>DrMadWill</Authors>
         <PackageIcon>Dr.png</PackageIcon>
         <RepositoryType>git</RepositoryType>
-        <Version>1.5</Version>
+        <Version>1.8</Version>
     </PropertyGroup>
 
     <ItemGroup>

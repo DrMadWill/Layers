@@ -58,5 +58,28 @@ namespace DrMadWill.Layers.Repository.Extensions.Paging
                 Source = await Paginate<TEntity>.Paging(source, req.Page).ToListAsync(),
             };
         }
+
+        public static async Task<(IQueryable<T> pagedSource, PageModel paging)> PagedSourceQueryAsync(IQueryable<T> source, PageReq req)
+        {
+            
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            req.Page = req.Page == 0 ? 1 : req.Page;
+
+            // PerPage Count
+            if (req.PerPage > 0 && req.PerPage <= 200)
+                Paginate<T>.PerPage = req.PerPage;
+
+            return (Paginate<T>.Paging(source, req.Page),
+                new PageModel(await source.CountAsync(), req.Page, Paginate<T>.PerPage));
+        }
+
+        public static SourcePaged<T> Paged(List<T> source, PageModel pageModel) 
+            => new() { Source = source, PagingModel = pageModel };
+
+        public static async Task<(List<T> pagedSource, PageModel paging)> PagedSourceAsync(IQueryable<T> source, PageReq req)
+        {
+            var (paged, model) = await PagedSourceQueryAsync(source, req);
+            return (await paged.ToListAsync(), model);
+        }
     }
 }

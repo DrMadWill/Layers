@@ -25,7 +25,21 @@ public class WriteRepository<TEntity, TPrimary> : IWriteRepository<TEntity, TPri
         DbContext = dbContext;
         Table = dbContext.Set<TEntity>();
     }
+    
+    /// <summary>
+    /// Retrieves an IQueryable for all entities of type TEntity, optionally including deleted entities and/or applying tracking.
+    /// </summary>
+    /// <param name="tracking">If true, the query will track changes to the entities. Default is false.</param>
+    /// <param name="isDeleted">If true, the query will include entities that are marked as deleted. Default is false.</param>
+    /// <returns>An IQueryable of all entities of type TEntity.</returns>
+    public virtual IQueryable<TEntity> GetAllQueryable(bool tracking = false, bool isDeleted = false)
+    {
+        return BehaviorDeleteStatus(tracking ? Table : Table.AsNoTracking());
 
+        IQueryable<TEntity> BehaviorDeleteStatus(IQueryable<TEntity> entities)
+            => isDeleted ? entities : entities.Where(s => s.IsDeleted != true); 
+    }
+    
     /// <summary>
     /// Asynchronously adds a new entity to the DbSet.
     /// </summary>

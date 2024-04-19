@@ -19,6 +19,16 @@ public class WriteOriginRepository<TEntity, TPrimary> : IWriteOriginRepository<T
         DbContext = dbContext;
         Table = dbContext.Set<TEntity>();
     }
+    
+    /// <summary>
+    /// Retrieves an IQueryable for all entities of type TEntity, optionally including applying tracking.
+    /// </summary>
+    /// <param name="tracking">If true, the query will track changes to the entities. Default is false.</param>
+    /// <returns>An IQueryable of all entities of type TEntity.</returns>
+    public virtual IQueryable<TEntity> GetAllQueryable(bool tracking = false)
+    {
+        return (tracking ? Table : Table.AsNoTracking());
+    }
 
     /// <summary>
     /// Asynchronously adds a new entity to the DbSet.
