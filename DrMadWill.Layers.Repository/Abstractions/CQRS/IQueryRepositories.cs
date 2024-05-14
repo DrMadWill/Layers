@@ -24,7 +24,8 @@ public interface IQueryRepositories : IDisposable
     /// <returns>An instance of the read repository for the specified entity type.</returns>
     IReadOriginRepository<TEntity, TPrimary> OriginRepository<TEntity, TPrimary>()
         where TEntity : class, IOriginEntity<TPrimary>, new(); 
-    
+    IAnonymousRepository<TEntity> AnonymousRepository<TEntity>()
+        where TEntity : class, new();  
     /// <summary>
     /// Gets a special repository based on the provided type.
     /// </summary>

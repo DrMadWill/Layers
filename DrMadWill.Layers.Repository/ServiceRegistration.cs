@@ -17,6 +17,7 @@ public static class ServiceRegistration
         RegisterService(typeof(IWriteRepository<,>), typeof(WriteRepository<,>));
         RegisterService(typeof(IWriteOriginRepository<,>), typeof(WriteOriginRepository<,>));
         RegisterService(typeof(IReadOriginRepository<,>), typeof(ReadOriginRepository<,>));
+        RegisterService(typeof(IAnonymousRepository<>), typeof(AnonymousRepository<>));
 
         services.Add(new ServiceDescriptor(typeof(IQueryRepositories), typeof(TQueryRepositories), lifetime));
         services.Add(new ServiceDescriptor(typeof(IUnitOfWork), typeof(TUnitOfWork), lifetime));

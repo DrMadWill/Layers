@@ -23,6 +23,12 @@ public abstract class ValueObject
         return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
     }
 
+    public static bool operator ==(ValueObject left, ValueObject right)
+        => EqualOperator(left, right);
+
+    public static bool operator !=(ValueObject left, ValueObject right)
+        => NotEqualOperator(left, right);
+
     public override int GetHashCode()
     {
         return GetEqualityComponents()

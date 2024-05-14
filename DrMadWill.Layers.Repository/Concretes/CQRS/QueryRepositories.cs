@@ -58,6 +58,16 @@ namespace DrMadWill.Layers.Repository.Concretes.CQRS
             return repo; 
         }
 
+        public IAnonymousRepository<TEntity> AnonymousRepository<TEntity>() where TEntity : class, new()
+        {
+            if (Repositories.Keys.Contains(typeof(TEntity)))
+                return Repositories[typeof(TEntity)] as IAnonymousRepository<TEntity>;
+
+            var repo = new AnonymousRepository<TEntity>(DbContext, Mapper);
+            Repositories.Add(typeof(TEntity), repo);
+            return repo; 
+        }
+
         /// <summary>
         /// Gets a special repository based on the provided type.
         /// </summary>
