@@ -7,12 +7,11 @@ namespace DrMadWill.Layers.Services;
 public static class ServiceRegistration
 {
     public static IServiceCollection LayerServicesRegister<TServiceManager>
-        (this IServiceCollection services,ServiceLifetime lifetime = ServiceLifetime.Scoped,bool hasSessionManager = true)
+        (this IServiceCollection services,ServiceLifetime lifetime = ServiceLifetime.Scoped)
         where TServiceManager : ServiceManager
       
     {
         services.Add(new ServiceDescriptor(typeof(IServiceManager), typeof(TServiceManager), lifetime));
-        if(hasSessionManager) services.AddScoped<ISessionManger, SessionManager>();
         return services;
     }
 }
